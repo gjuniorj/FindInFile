@@ -2,7 +2,7 @@
 
 $file_to_search = "file.pdf";
 
-search_file('../../../teste',$file_to_search);
+search_file('.',$file_to_search);
 
 
 function search_file($dir,$file_to_search){
