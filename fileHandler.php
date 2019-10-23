@@ -3,16 +3,20 @@
 
 $something_to_search = ".xml";
 
-search_file('../../../teste',$something_to_search, 'getXMLAttribute');
 //search_file('.',$file_to_search);
+$elementsArray = search_element('../../../teste',$something_to_search, 'getXMLAttribute');
+fileWriter ($elementsArray);
+echo 'File created!';
 
 
 /**
- * @param string $dir
- * @param string $something_to_search
+ * @param $dir
+ * @param $something_to_search
  * @param $callback
+ * @return mixed
  */
-function search_file($dir,$something_to_search, $callback){
+function search_element($dir,$something_to_search, $callback){
+    $typesArray = array();
 
     //Returns an array with directories and files names found inside given directory
     $files = scandir($dir);
@@ -29,9 +33,7 @@ function search_file($dir,$something_to_search, $callback){
             //It's a file. Searches for a file with specified extension.
             if(strcmp($something_to_search, getFileExtension($value)) == 0){
 
-//                echo 'arquivo => '.$value;
-//                echo 'Vai chamar callback';
-                $callback($path);
+                $typesArray = $callback($path);
 
             }
 
@@ -39,12 +41,22 @@ function search_file($dir,$something_to_search, $callback){
         elseif($value != "." && $value != "..") {
 
             //Searches file inside found directory
-            search_file($path, $something_to_search, $callback);
+            search_element($path, $something_to_search, $callback);
 
         }
     }
+
+    return $typesArray;
+
 }
 
+
+/**
+ * Returns file extension
+ *
+ * @param string $haystack
+ * @return string
+ */
 function getFileExtension($haystack){
 
     $needlePos = strrpos($haystack,'.');
@@ -62,48 +74,61 @@ function getFileExtension($haystack){
 
 }
 
+
 /**
+ * Iterates each field tag and returns an array of attributes of "type" type
+ *
  * @param $xmlFilePath
- * @return int|SimpleXMLElement|string
+ * @return array
  */
 function getXMLAttribute($xmlFilePath){
 
-    //Loading xml file to object
-    $xml = simplexml_load_file($xmlFilePath, null, null);
-
     $typesArray = array();
 
-    //Iterating table attributes
-    for ($i=0; $i < count($xml->table); $i++){
+    // Creates an object that provides recursive iteration over all nodes of a SimpleXMLElement object
+    // Parameter "data_is_url" must be "true" because the object is created from a xml file path, and not a string (see first parameter of function)
+    $xmlIterator = new SimpleXMLIterator($xmlFilePath, null, true);
+    $recursive = new RecursiveIteratorIterator($xmlIterator,RecursiveIteratorIterator::SELF_FIRST);
 
-        //verifies if field tag exists
-        if ( !is_null($xml->table[$i]->field) ){
+    foreach ($recursive as $tag => $object) {
+        if ($tag === 'field') {
 
-            //Iterating field tags of table
-            for ($j=0; $j < count($xml->table[$i]->field); $j++){
+            $type = $object['type'];
 
-                //Gets type attribute from field tag/node
-                $typeAttribute = $xml->table[$i]->field[$j]->attributes()['type'];
-
-                if ( !is_null($typeAttribute) ) {
-                    array_push($typesArray, $typeAttribute);
-                }
+            if ( !(is_null($type)) && !( in_array( $type, $typesArray) ) ){
+                array_push($typesArray,(string)$object['type']);
             }
-
-
         }
+
     }
-    var_dump($typesArray);
 
-//    //Iterating attributes of field tag in the xml file
-//    foreach($xml as $attribute => $value) {
-//
-//        //Verifies if attribute name is "type"
-//        if ( strcmp($attribute, 'type') === 0){
-//            //echo $attribute.' => '.$value;
-//        }
-//
-//    }
+    return $typesArray;
 
-    //return $attribute;
 }
+
+
+function fileWriter ($array){
+
+    $fp = fopen('file.txt', 'w');
+    //TODO: foreach aqui
+    fwrite($fp, print_r($array, TRUE));
+    fclose($fp);
+
+}
+
+
+
+
+
+//    // Creates an object that provides recursive iteration over all nodes of a SimpleXMLElement object
+//    // Parameter "data_is_url" must be "true" because the object is created from a xml file path, and not a string (see first parameter of function)
+//    $xmlIterator = new SimpleXMLIterator($xmlFilePath, null, true);
+//    //Constructs a recursive iterator from an iterator
+//    $recursive = new RecursiveIteratorIterator($xmlIterator);
+//
+//    foreach ($recursive as $tag => $object){
+//        if ($tag === 'field') {
+//            //echo $object, "\n";
+//            var_dump((string)$object['type']);
+//        }
+//    }
