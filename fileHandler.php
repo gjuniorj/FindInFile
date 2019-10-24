@@ -1,27 +1,32 @@
 <?php
 
 
-$something_to_search = ".xml";
+$extension_to_search = ".xml";
+$directory_to_search = '../../../teste';
 
-//search_file('.',$file_to_search);
-$elementsArray = search_element('../../../teste',$something_to_search, 'getXMLAttribute');
+$elementsArray = searchFileWithExtension($directory_to_search,$extension_to_search, 'getXMLTypeAttribute');
 fileWriter ($elementsArray);
-echo 'File created!';
+echo 'File created!'.PHP_EOL;
+
+
 
 
 /**
+ * Goes inside given directory and searches for files with specified extension.
+ * Returns an array of elements from a callback function.
+ *
  * @param $dir
- * @param $something_to_search
+ * @param $extension_to_search
  * @param $callback
- * @return mixed
+ * @return array
  */
-function search_element($dir,$something_to_search, $callback){
+function searchFileWithExtension($dir, $extension_to_search, $callback){
     $typesArray = array();
 
-    //Returns an array with directories and files names found inside given directory
+    //Returns an array with directories and file names found inside given directory
     $files = scandir($dir);
 
-    //
+    //Go inside the directory searching for the file with the given extension
     foreach($files as $value){
 
         //Gets full path of directory or file
@@ -31,7 +36,7 @@ function search_element($dir,$something_to_search, $callback){
         if(!is_dir($path)) {
 
             //It's a file. Searches for a file with specified extension.
-            if(strcmp($something_to_search, getFileExtension($value)) == 0){
+            if(strcmp($extension_to_search, getFileExtension($value)) == 0){
 
                 $typesArray = $callback($path);
 
@@ -41,7 +46,7 @@ function search_element($dir,$something_to_search, $callback){
         elseif($value != "." && $value != "..") {
 
             //Searches file inside found directory
-            search_element($path, $something_to_search, $callback);
+            searchFileWithExtension($path, $extension_to_search, $callback);
 
         }
     }
@@ -52,7 +57,7 @@ function search_element($dir,$something_to_search, $callback){
 
 
 /**
- * Returns file extension
+ * Returns file extension.
  *
  * @param string $haystack
  * @return string
@@ -76,18 +81,19 @@ function getFileExtension($haystack){
 
 
 /**
- * Iterates each field tag and returns an array of attributes of "type" type
+ * Iterates each field tag and returns an array of attributes of "type" type.
  *
  * @param $xmlFilePath
  * @return array
  */
-function getXMLAttribute($xmlFilePath){
+function getXMLTypeAttribute($xmlFilePath){
 
     $typesArray = array();
 
     // Creates an object that provides recursive iteration over all nodes of a SimpleXMLElement object
     // Parameter "data_is_url" must be "true" because the object is created from a xml file path, and not a string (see first parameter of function)
     $xmlIterator = new SimpleXMLIterator($xmlFilePath, null, true);
+    //Constructs a recursive iterator from an iterator
     $recursive = new RecursiveIteratorIterator($xmlIterator,RecursiveIteratorIterator::SELF_FIRST);
 
     foreach ($recursive as $tag => $object) {
@@ -106,7 +112,10 @@ function getXMLAttribute($xmlFilePath){
 
 }
 
-
+/**
+ * @param $array
+ *
+ */
 function fileWriter ($array){
 
     $fp = fopen('file.txt', 'w');
@@ -116,19 +125,3 @@ function fileWriter ($array){
 
 }
 
-
-
-
-
-//    // Creates an object that provides recursive iteration over all nodes of a SimpleXMLElement object
-//    // Parameter "data_is_url" must be "true" because the object is created from a xml file path, and not a string (see first parameter of function)
-//    $xmlIterator = new SimpleXMLIterator($xmlFilePath, null, true);
-//    //Constructs a recursive iterator from an iterator
-//    $recursive = new RecursiveIteratorIterator($xmlIterator);
-//
-//    foreach ($recursive as $tag => $object){
-//        if ($tag === 'field') {
-//            //echo $object, "\n";
-//            var_dump((string)$object['type']);
-//        }
-//    }
