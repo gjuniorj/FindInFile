@@ -2,7 +2,8 @@
 
 
 $extension_to_search = ".xml";
-$directory_to_search = '../../../teste';
+//$directory_to_search = '../../../teste';
+$directory_to_search = '/home/gilberto/Downloads/ojs-2.4.8-2';
 
 $elementsArray = searchFileWithExtension($directory_to_search,$extension_to_search, 'getXMLTypeAttribute');
 fileWriter ($elementsArray);
@@ -35,18 +36,20 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
         //Checks if path is a file or directory
         if(!is_dir($path)) {
 
+
             //It's a file. Searches for a file with specified extension.
             if(strcmp($extension_to_search, getFileExtension($value)) == 0){
 
-                $typesArray = $callback($path);
+                $typesArray = array_unique(array_merge($typesArray, $callback($path)));
+
 
             }
 
         } //It's a directory.
-        elseif($value != "." && $value != "..") {
+    elseif($value != "." && $value != "..") {
 
             //Searches file inside found directory
-            searchFileWithExtension($path, $extension_to_search, $callback);
+            $typesArray = array_unique(array_merge($typesArray, searchFileWithExtension($path, $extension_to_search, $callback)));
 
         }
     }
@@ -69,7 +72,6 @@ function getFileExtension($haystack){
     //Verifies if file has an extension
     if ( $needlePos === false ){
         //echo "ERROR - File name must have an extension.";
-        //var_dump($haystack);
         return '';
     }
 
@@ -97,6 +99,7 @@ function getXMLTypeAttribute($xmlFilePath){
     $recursive = new RecursiveIteratorIterator($xmlIterator,RecursiveIteratorIterator::SELF_FIRST);
 
     foreach ($recursive as $tag => $object) {
+
         if ($tag === 'field') {
 
             $type = $object['type'];
@@ -119,8 +122,12 @@ function getXMLTypeAttribute($xmlFilePath){
 function fileWriter ($array){
 
     $fp = fopen('file.txt', 'w');
-    //TODO: foreach aqui
-    fwrite($fp, print_r($array, TRUE));
+
+    sort($array);
+
+    foreach ($array as $value){
+        fwrite($fp, print_r($value, true) . PHP_EOL);
+    }
     fclose($fp);
 
 }
