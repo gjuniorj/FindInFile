@@ -33,6 +33,7 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
         //Gets full path of directory or file
         $path = realpath($dir.DIRECTORY_SEPARATOR.$value);
 
+
         //Checks if path is a file or directory
         if(!is_dir($path)) {
 
@@ -40,6 +41,7 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
             //It's a file. Searches for a file with specified extension.
             if(strcmp($extension_to_search, getFileExtension($value)) == 0){
 
+                echo $path.PHP_EOL;
                 $typesArray = array_unique(array_merge($typesArray, $callback($path)));
 
 
