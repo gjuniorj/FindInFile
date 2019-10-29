@@ -3,7 +3,7 @@
 
 $extension_to_search = ".xml";
 //$directory_to_search = '../../../teste';
-$directory_to_search = '/home/gilberto/Downloads/ojs-2.4.8-2';
+$directory_to_search = '/home/gilberto/Downloads/ojs-2.4.8-2/plugins/paymethod/paypal';
 
 $elementsArray = searchFileWithExtension($directory_to_search,$extension_to_search, 'getXMLTypeAttribute');
 fileWriter ($elementsArray);
@@ -28,10 +28,10 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
     $files = scandir($dir);
 
     //Go inside the directory searching for the file with the given extension
-    foreach($files as $value){
+    foreach($files as $file){
 
         //Gets full path of directory or file
-        $path = realpath($dir.DIRECTORY_SEPARATOR.$value);
+        $path = realpath($dir.DIRECTORY_SEPARATOR.$file);
 
 
         //Checks if path is a file or directory
@@ -39,19 +39,19 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
 
 
             //It's a file. Searches for a file with specified extension.
-            if(strcmp($extension_to_search, getFileExtension($value)) == 0){
+            if(strcmp($extension_to_search, getFileExtension($file)) == 0){
 
-                echo $path.PHP_EOL;
-                $typesArray = array_unique(array_merge($typesArray, $callback($path)));
+                //echo $path.PHP_EOL;
+                $typesArray = array_merge($typesArray, $callback($path));
 
 
             }
 
         } //It's a directory.
-    elseif($value != "." && $value != "..") {
+    elseif($file != "." && $file != "..") {
 
             //Searches file inside found directory
-            $typesArray = array_unique(array_merge($typesArray, searchFileWithExtension($path, $extension_to_search, $callback)));
+            $typesArray = array_merge($typesArray, searchFileWithExtension($path, $extension_to_search, $callback));
 
         }
     }
@@ -100,20 +100,33 @@ function getXMLTypeAttribute($xmlFilePath){
     //Constructs a recursive iterator from an iterator
     $recursive = new RecursiveIteratorIterator($xmlIterator,RecursiveIteratorIterator::SELF_FIRST);
 
-    foreach ($recursive as $tag => $object) {
+    foreach ($recursive as $tag => $attribute) {
 
+        //Searches for field tag
         if ($tag === 'field') {
 
-            $type = $object['type'];
+            //Write filename in array
+            array_push($typesArray, $xmlFilePath);
 
-            if ( !(is_null($type)) && !( in_array( $type, $typesArray) ) ){
-                array_push($typesArray,(string)$object['type']);
+            //Get type attribute
+            $type = $attribute['type'];
+
+            //Write type attribute in array, if attribute is not null and if it's not in array
+            if ( !(is_null($type)) ) {
+                array_push($typesArray,(string)$attribute['type']);
             }
         }
 
     }
 
-    return $typesArray;
+    if ( count($typesArray) > 0 ){
+        $countElementsArray = array_count_values($typesArray);
+        print_r($countElementsArray);
+    }
+    //TODO: Retornar vetor $countElementsArray na função.
+    return $countElementsArray;
+
+    //return array_unique($typesArray);
 
 }
 
@@ -125,7 +138,7 @@ function fileWriter ($array){
 
     $fp = fopen('file.txt', 'w');
 
-    sort($array);
+    //sort($array);
 
     foreach ($array as $value){
         fwrite($fp, print_r($value, true) . PHP_EOL);
