@@ -2,8 +2,7 @@
 
 
 $extension_to_search = ".xml";
-//$directory_to_search = '../../../teste';
-$directory_to_search = '/home/gilberto/Downloads/ojs-2.4.8-2/plugins/paymethod/paypal';
+$directory_to_search = '/home/edil/Downloads/ojs-2.4.8-2';
 
 $elementsArray = searchFileWithExtension($directory_to_search,$extension_to_search, 'getXMLTypeAttribute');
 fileWriter ($elementsArray);
@@ -41,9 +40,8 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
             //It's a file. Searches for a file with specified extension.
             if(strcmp($extension_to_search, getFileExtension($file)) == 0){
 
-                //echo $path.PHP_EOL;
-                $typesArray = array_merge($typesArray, $callback($path));
 
+                $typesArray = array_merge($typesArray, $callback($path));
 
             }
 
@@ -55,7 +53,6 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
 
         }
     }
-
     return $typesArray;
 
 }
@@ -73,7 +70,6 @@ function getFileExtension($haystack){
 
     //Verifies if file has an extension
     if ( $needlePos === false ){
-        //echo "ERROR - File name must have an extension.";
         return '';
     }
 
@@ -93,6 +89,7 @@ function getFileExtension($haystack){
 function getXMLTypeAttribute($xmlFilePath){
 
     $typesArray = array();
+    $countElementsArray = array();
 
     // Creates an object that provides recursive iteration over all nodes of a SimpleXMLElement object
     // Parameter "data_is_url" must be "true" because the object is created from a xml file path, and not a string (see first parameter of function)
@@ -121,12 +118,11 @@ function getXMLTypeAttribute($xmlFilePath){
 
     if ( count($typesArray) > 0 ){
         $countElementsArray = array_count_values($typesArray);
+       //TODO: Return here!!!! return print_r($countElementsArray, true);
         print_r($countElementsArray);
     }
-    //TODO: Retornar vetor $countElementsArray na função.
-    return $countElementsArray;
 
-    //return array_unique($typesArray);
+    return $countElementsArray;
 
 }
 
@@ -138,10 +134,9 @@ function fileWriter ($array){
 
     $fp = fopen('file.txt', 'w');
 
-    //sort($array);
 
-    foreach ($array as $value){
-        fwrite($fp, print_r($value, true) . PHP_EOL);
+    foreach ($array as $names => $quantities){
+        fwrite($fp, $names .'=>'. $quantities . PHP_EOL);
     }
     fclose($fp);
 
