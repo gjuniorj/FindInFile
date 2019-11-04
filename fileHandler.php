@@ -2,10 +2,10 @@
 
 
 $extension_to_search = ".xml";
-$directory_to_search = '/home/edil/Downloads/ojs-2.4.8-2/dbscripts/xml';
+$directory_to_search = '/home/gilberto/Downloads/ojs-2.4.8-2/dbscripts';
 
 $elementsArray = searchFileWithExtension($directory_to_search,$extension_to_search, 'getXMLTypeAttribute');
-var_dump($elementsArray);
+//var_dump($elementsArray);
 fileWriter ($elementsArray);
 echo 'File created!'.PHP_EOL;
 
@@ -33,6 +33,7 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
         //Gets full path of directory or file
         $path = realpath($dir.DIRECTORY_SEPARATOR.$file);
 
+//        echo $path.PHP_EOL;
 
         //Checks if path is a file or directory
         if(!is_dir($path)) {
@@ -40,8 +41,7 @@ function searchFileWithExtension($dir, $extension_to_search, $callback){
 
             //It's a file. Searches for a file with specified extension.
             if(strcmp($extension_to_search, getFileExtension($file)) == 0){
-
-                array_push($typesArray, $callback($path));
+                    array_push($typesArray,  $callback($path));
             }
 
         } //It's a directory.
@@ -114,12 +114,13 @@ function getXMLTypeAttribute($xmlFilePath){
 
     }
 
-    if ( count($typesArray) > 0 ){
+    if ( !empty($typesArray) ){
+//        var_dump($typesArray);
         $countElementsArray = array_count_values($typesArray);
         print_r($countElementsArray);
     }
 
-    //TODO: Tratar o retorno da Callbackp ara não adicionar array vazia
+    //TODO: Tratar o retorno da Callbackp para não adicionar array vazia
     return $countElementsArray;
 
 }
@@ -130,14 +131,21 @@ function getXMLTypeAttribute($xmlFilePath){
  */
 function fileWriter ($array){
 
+
     $fp = fopen('file.txt', 'w');
 
-
     foreach ($array as $typesArray){
-        foreach ($typesArray as $names => $quantities){
-            fwrite($fp, $names .'=>'. $quantities . PHP_EOL);
-        }
-        fwrite($fp, "".PHP_EOL);
+
+            foreach ($typesArray as $names => $quantities){
+
+//                var_dump($quantities);
+
+                if ( !is_array($quantities) ){
+                    //var_dump($quantities);
+                    fwrite($fp, $names .'=>'. $quantities . PHP_EOL);
+                }
+            }
+            fwrite($fp, "".PHP_EOL);
     }
     fclose($fp);
 
